@@ -58,7 +58,7 @@ public class MessageTrack {
 			}else {
 				event.getChannel().sendMessage("Only admins can use this command").queue();
 			}
-		}else if(!event.getAuthor().isBot() && rs.next()) { //if tables exists
+		}else if(!event.getAuthor().isBot() && rs.next() && !msg.startsWith("!")) { //if tables exists
 			long senderID = event.getAuthor().getIdLong();
 			long msgID = event.getMessageIdLong();
 			List<Attachment> attach = event.getMessage().getAttachments();
@@ -115,32 +115,38 @@ public class MessageTrack {
 			long cID = channel.getLong(2);
 			ResultSet data = stmt.executeQuery("SELECT * FROM " + gID + "_msg WHERE message_id=" + event.getMessageIdLong());
 			if(data.next()) { //if msg was found
-				event.getGuild().getTextChannelById(cID).sendMessage(msgBuilder(null, false, data.getLong(2), data.getString(3), data.getString(4), event.getJDA()).build()).queue();
+				EmbedBuilder builder = msgBuilder(null, false, data.getLong(2), data.getString(3), data.getString(4), event.getJDA());
+				if(builder != null) { //if user isn't banned and no other servers in common
+					event.getGuild().getTextChannelById(cID).sendMessage(builder.build()).queue();
+				}
 				stmt.executeUpdate("UPDATE " + gID + "_msg SET status=true WHERE message_id=" + event.getMessageId()); //deleted status
 			}
 		}
 	}
 	
 	public static EmbedBuilder msgBuilder(Message newMsg, boolean edit, long userID, String channel, String display, JDA jda) {
-		EmbedBuilder builder = new EmbedBuilder();
+		EmbedBuilder builder = null;
 		User author = jda.getUserById(userID);
-		if (!edit) {
-			builder.setAuthor(author.getName() + "#" + author.getDiscriminator(), null, author.getAvatarUrl());
-			builder.setTitle("Message deleted in #" + channel);
-			builder.setDescription(display);
-		} else {
-			List<Attachment> attach = newMsg.getAttachments();
-			String msg = newMsg.getContentDisplay();
-			if (attach.size() == 1) {
-				msg = attach.get(0).getUrl();
+		if(author != null) {
+			builder = new EmbedBuilder();
+			if (!edit) {
+				builder.setAuthor(author.getName() + "#" + author.getDiscriminator(), null, author.getAvatarUrl() != null ? author.getAvatarUrl() : author.getDefaultAvatarUrl());
+				builder.setTitle("Message deleted in #" + channel);
+				builder.setDescription(display);
+			} else {
+				List<Attachment> attach = newMsg.getAttachments();
+				String msg = newMsg.getContentDisplay();
+				if (attach.size() == 1) {
+					msg = attach.get(0).getUrl();
+				}
+				builder.setAuthor(author.getName() + "#" + author.getDiscriminator(), null, author.getAvatarUrl());
+				builder.setTitle("Message edited in #" + channel);
+				builder.addField("Before:", display, false);
+				builder.addField("After:", msg, false);
 			}
-			builder.setAuthor(author.getName() + "#" + author.getDiscriminator(), null, author.getAvatarUrl());
-			builder.setTitle("Message edited in #" + channel);
-			builder.addField("Before:", display, false);
-			builder.addField("After:", msg, false);
+			builder.setTimestamp(Instant.now());
+			builder.setColor(Color.CYAN);
 		}
-		builder.setTimestamp(Instant.now());
-		builder.setColor(Color.CYAN);
 		return builder;
 	}
 }

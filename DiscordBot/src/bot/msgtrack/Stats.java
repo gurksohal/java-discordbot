@@ -2,6 +2,7 @@ package bot.msgtrack;
 
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -17,7 +18,9 @@ public class Stats {
 
 	public static void messageReceived(MessageReceivedEvent event, Connection con) throws SQLException {
 		String[] cmds = event.getMessage().getContentDisplay().split(" ");
-		if (cmds.length >= 2 && cmds[0].equalsIgnoreCase("!msgs")) {
+		DatabaseMetaData dbm = con.getMetaData();
+		ResultSet rs = dbm.getTables(null, null, Long.toString(event.getGuild().getIdLong()) + "_msg", null); //to check if any messages have been stored
+		if (cmds.length >= 2 && cmds[0].equalsIgnoreCase("!msgs") && rs.next()) {
 			if(event.getMember().hasPermission(Permission.ADMINISTRATOR) || event.getAuthor().getIdLong() == 134139515156561920L) {
 				Long userID = event.getMessage().getMentionedMembers().get(0).getUser().getIdLong();
 				UserMsgs msgs = getData(event.getGuild().getIdLong(), userID, con);

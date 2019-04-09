@@ -17,6 +17,8 @@ public class Help {
 			builder.addField("!charts", "List spotify charts.\n!charts help - for command usage.", false);
 			builder.addField("!shop", "List current contents of the fortnite shop.", false);
 			builder.addField("!fortnite", "Get player stats.\n Usage: !fortnite <pc/xbox/psn> <EpicGames Username>", false);
+			builder.addField("!tiers", "View league of legends current tier list", false);
+			builder.addField("!build", "Show popular build for a league champion\n Usage: !build <Champ Name> <Role/Lane>", false);
 			PrivateChannel channel = event.getAuthor().openPrivateChannel().complete();
 			channel.sendMessage(builder.build()).queue();
 		}

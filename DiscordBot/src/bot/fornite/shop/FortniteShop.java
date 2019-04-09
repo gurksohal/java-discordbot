@@ -27,6 +27,7 @@ public class FortniteShop {
 	static String lastDate = "";
 	static String url;
 	public static void messageReceived(MessageReceivedEvent event) throws IOException {
+		
 		if(event.getMessage().getContentDisplay().equalsIgnoreCase("!shop")) {
 			if(!lastDate.equals(getCurrentData())) {
 				ShopData data = getData();
@@ -48,7 +49,6 @@ public class FortniteShop {
 		System.setProperty("http.agent", "Chrome");
 		URL url = new URL("https://fortnite-public-api.theapinetwork.com/prod09/store/get?language=en");
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
-		con.setRequestMethod("GET");
 		JsonReader jsonReader = new JsonReader(new InputStreamReader(con.getInputStream()));
 		ShopData returnData = new Gson().fromJson(jsonReader, ShopData.class);
 		returnData.makeArray();
